@@ -1,6 +1,6 @@
 # OT
 
-Okr tracker
+OKR tracker
 
 ## V1.0
 
