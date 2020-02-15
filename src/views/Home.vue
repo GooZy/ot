@@ -66,7 +66,7 @@
     <el-button style="float: left;" type="primary" @click="newObject">新建目标</el-button>
 
     <el-dialog title="新建关键结果" :visible.sync="dialogFormVisible">
-      <el-form :model="form">
+      <el-form :model="form" ref="form">
         <el-form-item label="关键结果"
                       prop="key"
                       :rules="[
@@ -80,12 +80,12 @@
                         { required: true, message: '目标值不能为空'},
                         { type: 'number', message: '目标值必须为数字值'}
                       ]">
-          <el-input v-model="form.target" autocomplete="off"></el-input>
+          <el-input v-model.number="form.target" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div>
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addNewKey">确 定</el-button>
+        <el-button type="primary" @click="addNewKey('form')">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -349,32 +349,39 @@
         this.dialogFormVisible = true;
         this.form.index = index;
       },
-      addNewKey() {
-        this.dialogFormVisible = false;
-        if (this.isEmpty(this.form.key)) {
-          this.sendMsg("关键结果不能为空", "error", 1500);
-          return
-        }
-        let data = this.tableData[this.form.index].data;
-        for (let i = 0; i < data.length; i++) {
-          if (data[i].key === this.form.key) {
-            this.sendMsg('关键结果不能相同', 'error', 1500);
-            return
+      addNewKey(formName) {
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            this.dialogFormVisible = false;
+            if (this.isEmpty(this.form.key)) {
+              this.sendMsg("关键结果不能为空", "error", 1500);
+              return
+            }
+            let data = this.tableData[this.form.index].data;
+            for (let i = 0; i < data.length; i++) {
+              if (data[i].key === this.form.key) {
+                this.sendMsg('关键结果不能相同', 'error', 1500);
+                return
+              }
+            }
+            let weight = 0;
+            if (data.length === 0) {
+              weight = 100;
+            }
+            data.push({
+              object: this.tableData[this.form.index].object,
+              key: this.form.key,
+              result: 0,
+              target: this.form.target,
+              weight: weight,
+            });
+            this.saveData();
+            this.initData();
+          } else {
+            this.sendMsg('未通过校验', 'error', 1500);
+            return false;
           }
-        }
-        let weight = 0;
-        if (data.length === 0) {
-          weight = 100;
-        }
-        data.push({
-          object: this.tableData[this.form.index].object,
-          key: this.form.key,
-          result: 0,
-          target: this.form.target,
-          weight: weight,
         });
-        this.saveData();
-        this.initData();
       },
 
       // 工具方法
