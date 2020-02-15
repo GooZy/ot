@@ -2,7 +2,9 @@
 
 OKR tracker
 
-## 启动
+项目在线访问：[https://goozy.github.io/ot/](https://goozy.github.io/ot/)
+
+## 线下启动
 
 `npm run serve`
 
