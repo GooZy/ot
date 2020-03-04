@@ -41,7 +41,7 @@
       return num + '';
     };
     let ret = [];
-    let curMonth = new Date().getMonth() + 2;
+    let curMonth = new Date().getMonth() + 3;  // getMonth从0开始。。。
     let curYear = new Date().getFullYear();
     if (curMonth > 12) {
       curYear += 1;

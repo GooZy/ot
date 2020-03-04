@@ -18,7 +18,7 @@
                 @cell-mouse-leave="cellLeave">
         <el-table-column label="关键结果" min-width="35">
           <template v-slot="scope">
-            <span v-if="hitBox[scope.row.object+scope.row.key+scope.column.label]">
+            <span v-if="hitBox[scope.row.object+scope.row.index+scope.column.label]">
               <el-input type="textarea" size="small" v-model="scope.row.key"></el-input>
             </span>
             <span v-else>{{scope.row.key}}</span>
@@ -26,7 +26,7 @@
         </el-table-column>
         <el-table-column label="当前进度" min-width="18">
           <template v-slot="scope">
-            <span v-if="hitBox[scope.row.object+scope.row.key+scope.column.label]">
+            <span v-if="hitBox[scope.row.object+scope.row.index+scope.column.label]">
               <el-input-number size="small" v-model="scope.row.result" :max="scope.row.target" :min="0"></el-input-number>
             </span>
             <span v-else>{{scope.row.result}}</span>
@@ -34,7 +34,7 @@
         </el-table-column>
         <el-table-column label="目标值" min-width="18">
           <template v-slot="scope">
-            <span v-if="hitBox[scope.row.object+scope.row.key+scope.column.label]">
+            <span v-if="hitBox[scope.row.object+scope.row.index+scope.column.label]">
               <el-input size="small" v-model="scope.row.target"></el-input>
             </span>
             <span v-else>{{scope.row.target}}</span>
@@ -42,10 +42,10 @@
         </el-table-column>
         <el-table-column :label="fixLabel" min-width="18">
           <template v-slot="scope">
-            <span v-if="hitBox[scope.row.object+scope.row.key+scope.column.label]">
+            <span v-if="hitBox[scope.row.object+scope.row.index+scope.column.label]">
               <el-input size="small" v-model="scope.row.weight"></el-input>
             </span>
-            <span v-else-if="hitBox[scope.row.object+scope.row.key+scope.column.label] === false">
+            <span v-else-if="hitBox[scope.row.object+scope.row.index+scope.column.label] === false">
               <el-input size="small" v-model="scope.row.weight" disabled></el-input>
             </span>
             <span v-else>{{scope.row.weight}}</span>
@@ -105,18 +105,21 @@
         tableData: [{
           object: '兴趣相关能力提升',
           data: [{
+            index: '0',
             object: '兴趣相关能力提升',
             key: '出口仁大家的日本语剩余35课完成',
             result: 10,
             target: 35,
             weight: 30
           }, {
+            index: '1',
             object: '兴趣相关能力提升',
             key: 'OT web版发布',
             result: 1,
             target: 10,
             weight: 60
           }, {
+            index: '2',
             object: '兴趣相关能力提升',
             key: '看完《百年孤独》',
             result: 6,
@@ -127,18 +130,21 @@
         }, {
           object: '兴趣相关能力提升2',
           data: [{
+            index: '0',
             object: '兴趣相关能力提升2',
             key: '出口仁大家的日本语剩余35课完成',
             result: 10,
             target: 35,
             weight: 30
           }, {
+            index: '1',
             object: '兴趣相关能力提升2',
             key: 'OT web版发布',
             result: 1,
             target: 10,
             weight: 40
           }, {
+            index: '2',
             object: '兴趣相关能力提升2',
             key: '看完《百年孤独》',
             result: 6,
@@ -183,7 +189,7 @@
               score += each.result / each.target * each.weight;
             });
             let lastData = data.data[data.data.length - 1];
-            this.hitBox[lastData.object + lastData.key + this.fixLabel] = false;
+            this.hitBox[lastData.object + lastData.index + this.fixLabel] = false;
           }
           if (isNaN(score)) {score = 0}
           scoreList.push(score.toFixed(2));
@@ -192,7 +198,7 @@
       },
 
       cellDbClick(row, column) {
-        let hitKey = row.object + row.key + column.label;
+        let hitKey = row.object + row.index + column.label;
         // 略过不可更改格子
         if (!isNaN(this.hitBox[hitKey])) {
           return;
@@ -294,7 +300,7 @@
           }
           this.saveData();
           this.initData();
-        }).catch(() => {});
+        }).catch(this.logMessage);
       },
       deleteTable(tableIndex) {
         this.$confirm('将要删除当前目标, 是否继续?', '提示', {
@@ -305,10 +311,10 @@
           this.tableData.splice(tableIndex, 1);
           this.saveData();
           this.initData();
-        }).catch(() => {});
+        }).catch(this.logMessage);
       },
       modifyObject(index) {
-        this.$prompt('', '修改目标', {
+        this.$prompt('原目标：' + this.tableData[index].object, '修改目标', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
         }).then(({ value }) => {
@@ -317,12 +323,12 @@
             return
           }
           this.tableData[index].object = value;
-          this.tableData[index].forEach(each => {
-            each.data.object = value;
+          this.tableData[index].data.forEach(each => {
+            each.object = value;
           });
           this.saveData();
           this.initData();
-        }).catch(() => {});
+        }).catch(this.logMessage);
       },
       newObject() {
         this.$prompt('', '新建目标', {
@@ -342,7 +348,7 @@
           this.tableData.push({object: value, data: []});
           this.saveData();
           this.initData();
-        }).catch(() => {});
+        }).catch(this.logMessage);
       },
       preAddKey(index) {
         // 为了传递index
@@ -374,6 +380,7 @@
               result: 0,
               target: this.form.target,
               weight: weight,
+              index: data.length + '',
             });
             this.saveData();
             this.initData();
@@ -394,6 +401,9 @@
           type: level,
           duration: time,
         });
+      },
+      logMessage(msg) {
+        console.log(msg);
       }
     },
     created() {
