@@ -5,7 +5,7 @@
     </el-card>
     <el-card class="box-card" v-for="(d, index) in tableData"
              style="margin-bottom: 10px">
-      <span style="float: left; font: bold 100% arial,sans-serif;">目标{{index + 1}}: {{d.object}}</span>
+      <span class="card-top">目标{{index + 1}}: {{d.object}}</span>
       <div style="float: right; padding: 5px 0">
         <el-button type="primary" size="mini" icon="el-icon-edit" circle @click="modifyObject(index)"></el-button>
         <el-button type="danger" size="mini" icon="el-icon-delete" circle @click="deleteTable(index)"></el-button>
@@ -63,6 +63,13 @@
       </el-col>
       <span>当前总分：<b>{{scoreList[index]}}</b> (满分：100)</span>
     </el-card>
+    <el-card v-if="tableData != null && tableData.length != 0">
+      <div slot="header" class="card-top">
+        <span>评论：</span>
+      </div>
+      <el-input type="textarea" autosize placeholder="请输入内容" v-model="comments"
+      @change="saveData"></el-input>
+    </el-card>
     <el-button style="float: left;" type="primary" @click="newObject">新建目标</el-button>
 
     <el-dialog title="新建关键结果" :visible.sync="dialogFormVisible">
@@ -102,6 +109,8 @@
         form: {},
         editData: false,
         dialogFormVisible: false,
+        commentsPre: 'comments',
+        comments: '',
         tableData: [{
           object: '兴趣相关能力提升',
           data: [{
@@ -159,6 +168,7 @@
         this.month = this.$route.query.month;
         this.tableData = [];
         this.scoreList = [];
+        this.comments = '';
         this.form = {
           key: '',
           target: 0,
@@ -171,10 +181,15 @@
           this.editData = false;
         }
         let tableData = localStorage.getItem(this.month);
+        let comments = localStorage.getItem(this.commentsPre + this.month);
         tableData = JSON.parse(tableData);
+        comments = JSON.parse(comments);
         if (tableData && tableData.length !== 0) {
           this.tableData = tableData;
           this.preUpdate(tableData);
+        }
+        if (comments) {
+          this.comments = comments;
         }
       },
 
@@ -217,6 +232,11 @@
       },
       saveData() {
         localStorage.setItem(this.month, JSON.stringify(this.tableData));
+        // 目标为空，清空评论
+        if (this.tableData.length === 0) {
+          this.comments = '';
+        }
+        localStorage.setItem(this.commentsPre + this.month, JSON.stringify(this.comments));
         this.sendMsg('数据保存成功', 'success', 1000);
       },
       formatData(row, column) {
@@ -426,5 +446,9 @@
     justify-content: center;
     display: flex;
     line-height: 34px;
+  }
+  .card-top {
+    float: left;
+    font: bold 100% arial,sans-serif;
   }
 </style>

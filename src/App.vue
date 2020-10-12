@@ -26,7 +26,7 @@
     },
     created() {
       this.activeTab = "1";
-      this.monthList = getMonthList(2019);
+      this.monthList = getMonthList(2020);
       let activeMonth = this.monthList[this.activeTab];
       this.$router.push({path: '/okr/', query: {'month': activeMonth}}).catch(() => {});
     }
