@@ -71,6 +71,14 @@
       @change="saveData"></el-input>
     </el-card>
     <el-button style="float: left;" type="primary" @click="newObject">新建目标</el-button>
+    <el-button style="float: left;" type="primary" @click="exportData">导出数据</el-button>
+    <el-upload style="float: right;" 
+      accept="application/json"
+      action="not-exist"
+      :before-upload="importData"
+      :limit="1">
+      <el-button type="primary">导入数据</el-button> 
+    </el-upload>
 
     <el-dialog title="新建关键结果" :visible.sync="dialogFormVisible">
       <el-form :model="form" ref="form">
@@ -99,6 +107,9 @@
 </template>
 
 <script>
+  import { getMonthList } from '../../static/js/tool';
+  import FileSaver from 'file-saver';
+import { async } from 'q';
   export default {
     data() {
       return {
@@ -409,6 +420,35 @@
             return false;
           }
         });
+      },
+      exportData() {
+        let data = {};
+        let monthList = getMonthList(2020);
+        monthList.forEach(m => {
+          data[m] = localStorage.getItem(m);
+          let commentKey = this.commentsPre + m;
+          data[commentKey] = localStorage.getItem(commentKey);
+        });
+        this.logMessage(data);
+        FileSaver.saveAs(new Blob([JSON.stringify(data)], {type: ''}), "ot.json");
+      },
+      importData(file) {
+        this.$confirm('将会覆盖当前所有数据，是否继续?', '提示', {
+          confirmButtonText: '继续',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let reader = new FileReader();
+          reader.onload = function(evt) {
+            let data = JSON.parse(evt.target.result);
+            for (var k in data) {
+              localStorage.setItem(k, data[k]);
+            }
+            location.reload();
+          }
+          reader.readAsText(file);
+        }).catch(this.logMessage);
+        return false
       },
 
       // 工具方法

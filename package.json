@@ -9,6 +9,7 @@
   "dependencies": {
     "core-js": "^3.4.4",
     "element-ui": "^2.4.5",
+    "file-saver": "^2.0.5",
     "http-proxy": "^1.18.1",
     "node-forge": "^0.10.0",
     "vue": "^2.6.10",
